@@ -1,5 +1,5 @@
 {
-  "name": "{{TODO_REPO_NAME}}",
+  "name": "noddity-micromark-renderer",
   "version": "0.0.0",
   "description": "{{TODO_DESCRIPTION}}",
   "type": "module",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/saibotsivad/{{TODO_REPO_NAME}}.git"
+    "url": "git+https://github.com/saibotsivad/noddity-micromark-renderer.git"
   },
   "keywords": [
     "{{TODO_KEYWORDS}}"
@@ -33,9 +33,9 @@
   },
   "license": "SEE LICENSE IN LICENSE.md",
   "bugs": {
-    "url": "https://github.com/saibotsivad/{{TODO_REPO_NAME}}/issues"
+    "url": "https://github.com/saibotsivad/noddity-micromark-renderer/issues"
   },
-  "homepage": "https://github.com/saibotsivad/{{TODO_REPO_NAME}}",
+  "homepage": "https://github.com/saibotsivad/noddity-micromark-renderer",
   "devDependencies": {
     "@saibotsivad/eslint-config-saibotsivad": "*"
   }
