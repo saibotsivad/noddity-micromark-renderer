@@ -37,6 +37,19 @@
   },
   "homepage": "https://github.com/saibotsivad/noddity-micromark-renderer",
   "devDependencies": {
-    "@saibotsivad/eslint-config-saibotsivad": "*"
+    "@saibotsivad/eslint-config-saibotsivad": "*",
+    "hast-util-to-html": "^8.0.3",
+    "js-yaml": "^4.1.0",
+    "mdast-util-from-markdown": "^1.2.0",
+    "mdast-util-frontmatter": "^1.0.0",
+    "mdast-util-gfm": "^2.0.1",
+    "mdast-util-to-hast": "^12.1.2",
+    "micromark-extension-frontmatter": "^1.0.0",
+    "micromark-extension-gfm": "^2.0.1",
+    "unist-builder": "^3.0.0",
+    "uvu": "^0.5.6"
+  },
+  "dependencies": {
+    "mdast-util-noddity": "^0.0.2"
   }
 }
