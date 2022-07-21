@@ -14,7 +14,7 @@ Change categories are:
 * `Fixed` for any bug fixes.
 * `Security` to invite users to upgrade in case of vulnerabilities.
 
-## [Unreleased]
+## Unreleased
 ### Added
 ### Changed
 ### Deprecated
@@ -22,10 +22,10 @@ Change categories are:
 ### Removed
 ### Security
 
+## [1.0.0](https://github.com/saibotsivad/noddity-micromark-renderer/compare/v0.0.0...v1.0.0) - 2022-07-21
+### Changed
+- Got everything working pretty well, demo included, with some tests.
+
 ## [0.0.0](https://github.com/saibotsivad/noddity-micromark-renderer/tree/v0.0.0) - 2022-07-20
 ### Added
 - Created the base project from [saibotsivad/init](https://github.com/saibotsivad/init).
-
-[Unreleased]: https://github.com/saibotsivad/noddity-micromark-renderer/compare/v0.0.0...HEAD
-[0.0.1]: https://github.com/saibotsivad/noddity-micromark-renderer/compare/v0.0.0...v0.0.1
-[0.0.0]: https://github.com/saibotsivad/noddity-micromark-renderer/tree/v0.0.0
