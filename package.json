@@ -1,22 +1,11 @@
 {
   "name": "noddity-micromark-renderer",
   "version": "0.0.0",
-  "description": "{{TODO_DESCRIPTION}}",
+  "description": "Implementation of Noddity that uses Micromark and mdast to render the Markdown content, and has *no opinion* about non-Markdown content.",
   "type": "module",
-  "module": "dist/index.js",
-  "unpkg": "dist/index.min.js",
-  "main": "dist/index.cjs",
-  "types": "index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
-  },
+  "main": "src/index.js",
   "scripts": {
-    "test": "uvu src",
-    "build": "bundt src/index.js",
+    "test": "npm run lint && uvu src",
     "lint": "eslint"
   },
   "repository": {
@@ -24,7 +13,10 @@
     "url": "git+https://github.com/saibotsivad/noddity-micromark-renderer.git"
   },
   "keywords": [
-    "{{TODO_KEYWORDS}}"
+    "noddity",
+    "micromark",
+    "markdown",
+    "mdast"
   ],
   "author": {
     "name": "Tobias Davis",
@@ -37,6 +29,19 @@
   },
   "homepage": "https://github.com/saibotsivad/noddity-micromark-renderer",
   "devDependencies": {
-    "@saibotsivad/eslint-config-saibotsivad": "*"
+    "@saibotsivad/eslint-config-saibotsivad": "*",
+    "hast-util-to-html": "^8.0.3",
+    "js-yaml": "^4.1.0",
+    "mdast-util-from-markdown": "^1.2.0",
+    "mdast-util-frontmatter": "^1.0.0",
+    "mdast-util-gfm": "^2.0.1",
+    "mdast-util-to-hast": "^12.1.2",
+    "micromark-extension-frontmatter": "^1.0.0",
+    "micromark-extension-gfm": "^2.0.1",
+    "ractive": "^0.7.3",
+    "uvu": "^0.5.6"
+  },
+  "dependencies": {
+    "mdast-util-noddity": "^0.0.3"
   }
 }

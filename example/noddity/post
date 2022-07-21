@@ -1,0 +1,9 @@
+---
+title: Post template
+markdown: false
+---
+
+<div class="main-wrapper">
+	<h1>{{metadata.title}}</h1>
+	{{>current}}
+</div>
