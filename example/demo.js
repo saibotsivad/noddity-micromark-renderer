@@ -13,11 +13,11 @@ const out1 = await render.fromString('a [[cool.md|file]] link', 'yolo.md')
 console.log('----------- HTML1 -------------')
 console.log(out1.html) // => <p>a <a href="https://site.com/#!/post/cool.md">file</a> link</p>
 
-const out2 = await render.fromLoader('example-file.md')
+const out2 = await render.loadFile('example-file.md')
 console.log('----------- HTML2 -------------')
 console.log(out2.html) // => <p>Here is an <a href="picture.png" class="link-no-underline" target="_blank"><img src="picture.png" style="max-width:100%;"></a> and an <a href="https://site.com/#!/post/file.md">internal</a> link.</p>
 
-const out3 = await render.fromLoader('old-school.md')
+const out3 = await render.loadFile('old-school.md')
 console.log('----------- HTML3 -------------')
 console.log(out3.html) // => <p>Notice how there are no triple dashes.\nBut it's still valid.</p>
 
