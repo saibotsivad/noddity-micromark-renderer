@@ -46,10 +46,11 @@
     "mdast-util-to-hast": "^12.1.2",
     "micromark-extension-frontmatter": "^1.0.0",
     "micromark-extension-gfm": "^2.0.1",
+    "ractive": "^0.7.3",
     "unist-builder": "^3.0.0",
     "uvu": "^0.5.6"
   },
   "dependencies": {
-    "mdast-util-noddity": "^0.0.2"
+    "mdast-util-noddity": "^0.0.3"
   }
 }
