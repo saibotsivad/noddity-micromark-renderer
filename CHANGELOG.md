@@ -22,6 +22,10 @@ Change categories are:
 ### Removed
 ### Security
 
+## [1.0.1](https://github.com/saibotsivad/noddity-micromark-renderer/compare/v1.0.0...v1.0.1) - 2022-07-26
+### Changed
+- Updated the version of `mdast-util-noddity` which has much more thorough and complete Noddity functionality.
+
 ## [1.0.0](https://github.com/saibotsivad/noddity-micromark-renderer/compare/v0.0.0...v1.0.0) - 2022-07-21
 ### Changed
 - Got everything working pretty well, demo included, with some tests.
