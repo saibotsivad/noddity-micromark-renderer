@@ -1,13 +1,16 @@
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-import { createCustomRenderer } from './demo-renderer.js'
+import { createCustomRenderer } from './demo-legacy-ractive-renderer.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const NODDITY_DIR = join(__dirname, 'noddity')
 const DOMAIN = 'site.com'
 
-const render = createCustomRenderer(NODDITY_DIR, DOMAIN)
+const render = createCustomRenderer({
+	noddityDirectory: NODDITY_DIR,
+	websiteDomain:DOMAIN,
+})
 
 const out1 = await render.fromString('a [[cool.md|file]] link', 'yolo.md')
 console.log('----------- HTML1 -------------')

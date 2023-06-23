@@ -67,7 +67,7 @@ export const noddityRenderer = ({
 	}
 	return {
 		fromString: async (markdownString, virtualFilename = 'VIRTUAL_FILE.md') => loadAndRenderNoddityContent(virtualFilename, markdownString),
-		loadFile: async filename => loadFile(filename).then(markdownString => loadAndRenderNoddityContent(filename, markdownString)),
+		loadFile: async (filename, options) => loadFile(filename).then(markdownString => loadAndRenderNoddityContent(filename, markdownString, options)),
 		loadMetadata: async filename => {
 			const { metadata } = await parseMarkdownToMdastAndParseMetadata(await loadFile(filename))
 			return metadata

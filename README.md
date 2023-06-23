@@ -38,7 +38,7 @@ Each input property is defined here:
 
 #### loadFile
 
-Typed: `(filename: string) => Promise<string>`
+Typed: `(filename: string, options?: Object) => Promise<string>`
 
 Used by the renderer to lookup Noddity templates. If you're rendering from disk, you could do:
 
@@ -47,6 +47,8 @@ import { join } from 'node:path'
 import { readFile } from 'node:fs/promises'
 const loadFile = async filename => readFile(join(NODDITY_FOLDER, filename), 'utf8')
 ```
+
+The `options` object is passed along to your non-Markdown renderer, merged into the overall options.
 
 #### metadataParser
 

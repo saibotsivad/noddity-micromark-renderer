@@ -1,4 +1,4 @@
 title: Relative Image
 markdown: false
 
-{{#if markdownOutput && !discardImages}}![]({{this.1}}){width=15cm}{{elseif !discardImages}}<a href="{{ this.1 }}" class="link-no-underline" target="_blank"><img src="{{ this.1 }}" style="max-width:{{ #if this.2 }}{{ this.2 }}{{ else }}100%{{ /if }};" height="{{ this.3 }}"></a>{{/if}}
+{{#if markdownOutput && !discardImages}}![]({{this.1}}){width=15cm}{{elseif !discardImages}}<a href="{{ this.1 }}" target="_blank"><img src="{{ this.1 }}" style="max-width:{{ #if this.2 }}{{ this.2 }}{{ else }}100%{{ /if }};" height="{{ this.3 }}"></a>{{/if}}

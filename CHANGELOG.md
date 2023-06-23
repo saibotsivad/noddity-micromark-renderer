@@ -22,6 +22,10 @@ Change categories are:
 ### Removed
 ### Security
 
+## [1.1.0](https://github.com/saibotsivad/noddity-micromark-renderer/compare/v1.0.1...v1.1.0) - 2023-06-22
+### Added
+- You can call the `loadFile` with an additional `options` object, which gets passed along to your non-Markdown renderer, merged into the overall options.
+
 ## [1.0.1](https://github.com/saibotsivad/noddity-micromark-renderer/compare/v1.0.0...v1.0.1) - 2022-07-26
 ### Changed
 - Updated the version of `mdast-util-noddity` which has much more thorough and complete Noddity functionality.
