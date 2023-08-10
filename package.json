@@ -1,6 +1,6 @@
 {
   "name": "noddity-micromark-renderer",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Implementation of Noddity that uses Micromark and mdast to render the Markdown content, and has *no opinion* about non-Markdown content.",
   "type": "module",
   "module": "default/index.js",
