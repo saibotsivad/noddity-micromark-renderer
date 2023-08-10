@@ -22,6 +22,12 @@ Change categories are:
 ### Removed
 ### Security
 
+## [2.0.0](https://github.com/saibotsivad/noddity-micromark-renderer/compare/v1.1.0...v2.0.0) - 2023-08-09
+### Changed
+- No longer supporting CommonJS exports, it's all *the future* now.
+- It's not bundled anymore either, as that got a bit complicated. I might bundle it again later, all these dependencies are no fun to install.
+- Lots of the function signatures changed. They weren't well documented, but now hopefully the documentation is better, and more logical.
+
 ## [1.1.0](https://github.com/saibotsivad/noddity-micromark-renderer/compare/v1.0.1...v1.1.0) - 2023-06-22
 ### Added
 - You can call the `loadFile` with an additional `options` object, which gets passed along to your non-Markdown renderer, merged into the overall options.

@@ -1,0 +1,6 @@
+---
+title: Link that goes home
+markdown: false
+---
+
+<a href="https://{{ domain }}/">{{ this.1 }}</a>

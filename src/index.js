@@ -1,80 +1,81 @@
 import { noddityMdastMutator } from 'mdast-util-noddity'
 
-const parseAndSetMetadata = ({ mdastTree, metadataParser }) => {
-	const hasSimpleStyleMetadata = mdastTree?.children?.[0]?.type === 'paragraph' && mdastTree?.children?.[0]?.children?.length === 1
-	if (mdastTree?.children?.[0]?.type === 'yaml' || hasSimpleStyleMetadata) {
-		let value = hasSimpleStyleMetadata ? mdastTree.children[0].children[0].value : mdastTree.children[0].value
-		try {
-			const metadata = metadataParser(value)
-			if (metadata) mdastTree.children[0].metadata = metadata
-			if (hasSimpleStyleMetadata) {
-				mdastTree.children[0].type = 'yaml'
-				mdastTree.children[0].value = mdastTree.children[0].children[0].value
-				delete mdastTree.children[0].children
-			}
-		} catch (ignore) {
-			//
-		}
-	}
-}
-
 export const noddityRenderer = ({
 	loadFile,
-	metadataParser,
+	metadataMdastMutator,
 	urlRenderer,
 	nonMarkdownRenderer,
 	markdownToMdast,
 	mdastToHast,
 	hastToHtml,
 }) => {
-	const parseMarkdownToMdastAndParseMetadata = async (markdownString) => {
+	const parseMarkdownToMdastAndParseMetadata = async (filename, markdownString) => {
 		const mdastTree = await markdownToMdast(markdownString)
-		parseAndSetMetadata({ mdastTree, metadataParser })
-		const metadata = mdastTree.children[0].type === 'yaml' && mdastTree.children[0].metadata
+		if (metadataMdastMutator) await metadataMdastMutator({ filename, mdastTree })
+		const metadata = mdastTree.children[0].metadata
 		const metadataCharsOffset = metadata && mdastTree.children[0].position.end.offset
+		if (metadata) mdastTree.children.shift()
 		return {
 			tree: mdastTree,
-			contentString: metadataCharsOffset && markdownString.substring(metadataCharsOffset + 1), // 1 = number of empty lines between metadata and content
+			contentString: metadataCharsOffset
+				// 1 = number of empty lines between metadata and content
+				? markdownString.substring(metadataCharsOffset + 1)
+				: markdownString,
 			metadata,
 		}
 	}
-	const mutate = noddityMdastMutator({
-		urlRenderer,
-		templateResolver: async ({ filename, template, variables }) => {
-			const { html } = await loadAndRenderNoddityContent(filename, await loadFile(template), { filename, templateName: template, variables })
-			return {
-				type: 'html',
-				value: html,
-			}
-		},
-	})
-	const convertMdastToHtml = async (mdastTree, filename) => {
-		await mutate(mdastTree, filename)
-		const hastTree = mdastToHast(mdastTree)
+	const convertMdastToHtml = async (mdastTree, filename, { site, metadata }) => {
+		await noddityMdastMutator({
+			urlRenderer,
+			templateResolver: async ({ template, variables }) => {
+				const { html } = await loadAndRenderNoddityContent(
+					template,
+					await loadFile(template),
+					{ variables, site, metadata },
+				)
+				return {
+					type: 'html',
+					value: html,
+				}
+			},
+		})(mdastTree, filename)
+
+		const hastTree = mdastToHast(mdastTree, { site, metadata })
 		return hastToHtml(hastTree)
 	}
 	const loadAndRenderNoddityContent = async (filename, markdownString, opts) => {
-		const { tree, metadata, contentString } = await parseMarkdownToMdastAndParseMetadata(markdownString)
-		const html = metadata?.markdown === false
+		let { tree, metadata, contentString } = await parseMarkdownToMdastAndParseMetadata(filename, markdownString)
+		if (!metadata) metadata = {}
+		if (opts?.metadata) Object.assign(metadata, opts.metadata)
+		const html = metadata?.markdown === false && nonMarkdownRenderer
 			? await nonMarkdownRenderer({
 				...(opts || {}),
 				filename,
+				metadata,
 				templateString: contentString,
-				metadata: tree.children[0].metadata,
 			})
-			: await convertMdastToHtml(tree, filename)
+			: await convertMdastToHtml(tree, filename, { site: opts?.site, metadata, variables: opts?.variables })
 		return { html, metadata }
 	}
 	return {
-		fromString: async (markdownString, virtualFilename = 'VIRTUAL_FILE.md') => loadAndRenderNoddityContent(virtualFilename, markdownString),
-		loadFile: async (filename, options) => loadFile(filename).then(markdownString => loadAndRenderNoddityContent(filename, markdownString, options)),
+		fromString: async (markdownString, options) => loadAndRenderNoddityContent(
+			options?.filename || 'VIRTUAL_FILE.md',
+			markdownString,
+			{ site: options?.site, metadata: options?.metadata, variables: options?.variables },
+		),
+		loadFile: async (filename, options) => loadFile(filename)
+			.then(markdownString => loadAndRenderNoddityContent(
+				filename,
+				markdownString,
+				{ site: options?.site, metadata: options?.metadata, variables: options?.variables },
+			)),
 		loadMetadata: async filename => {
-			const { metadata } = await parseMarkdownToMdastAndParseMetadata(await loadFile(filename))
+			const { metadata } = await parseMarkdownToMdastAndParseMetadata(filename, await loadFile(filename))
 			return metadata
 		},
-		loadPost: async (templateFilename, postFilename) => {
-			const { html: postHtml, metadata: postMetadata } = await loadAndRenderNoddityContent(postFilename, await loadFile(postFilename))
-			const { tree, metadata: postTemplateMetadata, contentString: postTemplateString } = await parseMarkdownToMdastAndParseMetadata(await loadFile(templateFilename))
+		loadPost: async (templateFilename, postFilename, { site, metadata: loaderMetadata, variables } = {}) => {
+			const { html: postHtml, metadata: postMetadata } = await loadAndRenderNoddityContent(postFilename, await loadFile(postFilename), { site, metadata: loaderMetadata, variables })
+			const { tree, metadata: postTemplateMetadata, contentString: postTemplateString } = await parseMarkdownToMdastAndParseMetadata(templateFilename, await loadFile(templateFilename))
 			const metadata = { ...(postTemplateMetadata || {}), ...(postMetadata || {}) }
 			const postWrappedHtml = postTemplateMetadata?.markdown === false
 				? await nonMarkdownRenderer({
@@ -83,7 +84,7 @@ export const noddityRenderer = ({
 					metadata,
 					innerHtml: postHtml,
 				})
-				: await convertMdastToHtml(tree, postFilename)
+				: await convertMdastToHtml(tree, postFilename, { site, metadata, variables })
 			return { html: postWrappedHtml, metadata }
 		},
 	}

@@ -1,8 +1,8 @@
 # Noddity Micromark Renderer
 
-This is a re-work of Noddity that uses Micromark and mdast to render the Markdown content, and has *no opinion* about non-Markdown content.
+This is a re-work of Noddity that uses Micromark and mdast to render the Markdown content, and has no opinion about non-Markdown content.
 
-(See the [demo](./example/demo-renderer.js) for an example of using Ractive, Nodditys built-in template renderer.)
+Included is a legacy renderer, if you want to use classic Noddity syntax and the legacy Ractive renderer. (See the [demo](./example/demo-renderer.js) for an example of it.)
 
 ## Install
 
@@ -34,6 +34,21 @@ const NODDITY_FOLDER = '/path/to/noddity/content'
 const DOMAIN = 'my-site.com'
 ```
 
+If you're using the legacy renderer, which uses Ractive, you don't need nearly as much:
+
+```js
+import { noddityRenderer } from 'noddity-micromark-renderer/legacy'
+const render = noddityRenderer({
+	directory: NODDITY_FOLDER,
+	domain: 'site.com',
+	pathPrefix: '#!/',
+	pagePathPrefix: 'post/',
+	name: 'My Cool Website',
+})
+```
+
+## API of non-legacy `noddityRenderer`
+
 Each input property is defined here:
 
 #### loadFile
@@ -50,11 +65,16 @@ const loadFile = async filename => readFile(join(NODDITY_FOLDER, filename), 'utf
 
 The `options` object is passed along to your non-Markdown renderer, merged into the overall options.
 
-#### metadataParser
+#### metadataMdastMutator
 
-Typed: `(frontmatter: string): Object<*>`
+Typed: `async ({ filename: string, mdastTree: MdastTree }): void`
 
-Used by the renderer to parse the frontmatter section of each file.
+Called by the renderer to mutate the mdast (Markdown Abstract State Tree) to optionally parse the frontmatter section of each file and set it.
+
+After this is called, `mdast` should have these properties set to properly parse the remaining content:
+
+- `mdast.children[0].metadata` - This is the fully parsed file metadata, if present.
+- `mdast.children[0].position.end.offset` - This is the [unist](https://github.com/syntax-tree/unist) positional information about the character offset at the very end of the metadata, including frontmatter fence characters.
 
 If you want to use [js-yaml](https://github.com/nodeca/js-yaml) that would be (defining the schema is not required by this renderer):
 
