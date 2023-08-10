@@ -1,85 +1,83 @@
-import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
+import { fromMarkdown } from 'mdast-util-from-markdown'
+import { toHast } from 'mdast-util-to-hast'
+import { toHtml } from 'hast-util-to-html'
 
 import { test } from 'uvu'
 import * as assert from 'uvu/assert'
 
-import { sanitize } from 'hast-util-sanitize'
+import { noddityRenderer } from './index.js'
 
-import { createCustomRenderer } from '../example/demo-legacy-ractive-renderer.js'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const NODDITY_DIR = join(__dirname, '..', 'example', 'noddity')
-const DOMAIN = 'site.com'
-
-const render = createCustomRenderer({
-	noddityDirectory: NODDITY_DIR,
-	websiteDomain:DOMAIN,
-})
-
-const renderWithSanitize = createCustomRenderer({
-	noddityDirectory: NODDITY_DIR,
-	websiteDomain:DOMAIN,
-	hastSanitizer: hast => sanitize(hast /* configure your sanitizer options here */),
-})
-
-
-test('rendering from a string', async () => {
-	const out = await render.fromString('a [[cool.md|file]] link', 'yolo.md')
-	assert.equal(out.html, '<p>a <a href="https://site.com/#!/post/cool.md">file</a> link</p>')
-})
-
-test('loading a file', async () => {
-	const out = await render.loadFile('example-file.md')
-	assert.equal(out.html, '<p>Here is an <a href="picture.png" target="_blank"><img src="picture.png" style="max-width:100%;"></a> and an <a href="https://site.com/#!/post/file.md">internal</a> link.</p>')
-})
-
-test('loading a file but sanitizing the html', async () => {
-	const out = await renderWithSanitize.loadFile('example-file.md')
-	assert.equal(out.html, '<p>Here is an <a href="picture.png" target="_blank"><img src="picture.png"></a> and an <a href="https://site.com/#!/post/file.md">internal</a> link.</p>')
-})
-
-test('loading a file with older style metadata', async () => {
-	const out = await render.loadFile('old-school.md')
-	assert.equal(out.html, '<p>Notice how there are no triple dashes.\nBut it\'s still valid.</p>')
-})
-
-test('loading a full post', async () => {
-	const out = await render.loadPost('post', 'example-file.md')
-	assert.equal(out.html, '<div class="main-wrapper"><h1>An Example</h1> <p>Here is an <a href="picture.png" target="_blank"><img src="picture.png" style="max-width:100%;"></a> and an <a href="https://site.com/#!/post/file.md">internal</a> link.</p></div>')
-})
-
-test('loading just some metadata', async () => {
-	const metadata = await render.loadMetadata('old-school.md')
-	assert.equal(metadata, { title: 'An Old School Noddity File' })
-})
-
-test('loading a non-markdown file', async () => {
-	const out = await render.loadFile('img')
-	assert.equal(out.html, '<a target="_blank"><img style="max-width:100%;"></a>')
-})
-
-test('loading a non-markdown file and passing in some metadata', async () => {
-	const out = await render.loadFile(
-		'img',
+const options = {
+	urlRenderer: ({ file, nodes }) => ([
 		{
-			// The exact format of `variables` will be dependent on your
-			// non-Markdown renderer implementation details.
-			variables: [
-				{ positional: true, name: 'fractal.png' },
-				{ positional: true, name: '50px' },
-			],
+			type: 'element',
+			tagName: 'a',
+			properties: { href: file },
+			children: nodes,
 		},
-	)
-	assert.equal(out.html, '<a href="fractal.png" target="_blank"><img src="fractal.png" style="max-width:50px;"></a>')
+	]),
+	markdownToMdast: async string => fromMarkdown(string),
+	mdastToHast: mdastTree => toHast(mdastTree, { allowDangerousHtml: true }),
+	hastToHtml: async hastTree => toHtml(hastTree, { allowDangerousHtml: true }),
+}
+
+const simplestRender = noddityRenderer({
+	...options,
+	loadFile: async filename => {
+		if (filename === 'hello.md') return 'Hello *world*!'
+		else throw new Error('this test only calls those two files')
+	},
 })
 
-test('loading a non-markdown file with noddity in it', async () => {
-	const out = await render.loadFile('html-with-noddity.md')
-	assert.equal(out.html, [
-		'<p><a href="picture.png" target="_blank"><img src="picture.png" style="max-width:100%;"></a></p>',
-		'<p><a href="https://site.com/file.md#header1">internal</a></p>',
-	].join('\n'))
+test('the absolute simplest renderer actually does not need to even know about noddity although that would be weird', async () => {
+	assert.equal(
+		(await simplestRender.fromString('a [cool](file.md) link')).html,
+		'<p>a <a href="file.md">cool</a> link</p>',
+	)
+})
+
+test('in fact in this case it could not render noddity blocks', async () => {
+	assert.equal(
+		(await simplestRender.fromString('a [[cool.md|file]] link')).html,
+		'<p>a [[cool.md|file]] link</p>',
+	)
+})
+
+test('it will load a file', async () => {
+	assert.equal(
+		(await simplestRender.loadFile('hello.md')).html,
+		'<p>Hello <em>world</em>!</p>',
+	)
+})
+
+const renderNonMarkdown = noddityRenderer({
+	...options,
+	loadFile: async filename => {
+		if (filename === 'hello.md') return 'Hello *world*!'
+		else if (filename === 'layout') return '<div>$$CONTENT$$</div>'
+		else throw new Error('this test should not call ' + filename)
+	},
+	metadataMdastMutator: async ({ filename, mdastTree }) => {
+		if (filename === 'layout') {
+			mdastTree.children = [
+				{
+					metadata: { markdown: false },
+					position: { end: { offset: 0 } },
+				},
+				...mdastTree.children,
+			]
+		}
+	},
+	nonMarkdownRenderer: ({ templateString, innerHtml }) => {
+		return templateString.replace('$$CONTENT$$', innerHtml)
+	},
+})
+
+test('it will load a post', async () => {
+	assert.equal(
+		(await renderNonMarkdown.loadPost('layout', 'hello.md')).html,
+		'<div><p>Hello <em>world</em>!</p></div>',
+	)
 })
 
 test.run()

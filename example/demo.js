@@ -1,20 +1,18 @@
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-import { createCustomRenderer } from './demo-legacy-ractive-renderer.js'
+import { noddityRenderer } from '../src/legacy.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const NODDITY_DIR = join(__dirname, 'noddity')
-const DOMAIN = 'site.com'
 
-const render = createCustomRenderer({
-	noddityDirectory: NODDITY_DIR,
-	websiteDomain:DOMAIN,
+const render = noddityRenderer({
+	directory: join(__dirname, 'noddity'),
+	domain: 'site.com',
 })
 
-const out1 = await render.fromString('a [[cool.md|file]] link', 'yolo.md')
+const out1 = await render.fromString('very [[cool.md|file]] link', 'excellent.md')
 console.log('----------- HTML1 -------------')
-console.log(out1.html) // => <p>a <a href="https://site.com/#!/post/cool.md">file</a> link</p>
+console.log(out1.html) // => <p>very <a href="https://site.com/#!/post/cool.md">file</a> link</p>
 
 const out2 = await render.loadFile('example-file.md')
 console.log('----------- HTML2 -------------')

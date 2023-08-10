@@ -10,22 +10,18 @@ import { frontmatter } from 'micromark-extension-frontmatter'
 import { frontmatterFromMarkdown } from 'mdast-util-frontmatter'
 import { gfm } from 'micromark-extension-gfm'
 import { gfmFromMarkdown } from 'mdast-util-gfm'
-import { load, JSON_SCHEMA } from 'js-yaml'
 import { micromarkFromNoddity, mdastFromNoddity } from 'mdast-util-noddity'
 import Ractive from 'ractive'
 
 Ractive.DEBUG = false
 
-import { noddityRenderer } from '../src/index.js'
+import { noddityRenderer as coreNoddityMicromarkRenderer } from './index.js'
+import { metadataMdastMutator } from './yaml-metadata-mdast-mutator.js'
 
-const sitewideProperties = {
-	pathPrefix: '/',
-	pagePathPrefix: 'post/',
-}
-
-const legacyRactiveNoddityRenderer = ({ filename, templateString, metadata, variables, innerHtml }) => {
+const legacyRactiveNoddityRenderer = ({ siteProperties }) => ({ filename, templateString, site, metadata, variables, innerHtml }) => {
 	const data = {
-		...sitewideProperties,
+		...(siteProperties || {}),
+		...(site || {}),
 		filename,
 	}
 	;(variables || []).forEach((v, index) => {
@@ -33,24 +29,39 @@ const legacyRactiveNoddityRenderer = ({ filename, templateString, metadata, vari
 		else data[v.name] = v.value
 	})
 	if (metadata) data.metadata = metadata
+	if (filename === 'sermons-list') console.log('---------???', data, innerHtml, templateString)
 	return innerHtml
 		? Ractive({ partials: { current: innerHtml }, template: templateString, data }).toHTML()
 		: Ractive({ template: templateString, data }).toHTML()
 }
 
-export const createCustomRenderer = ({ noddityDirectory, websiteDomain, hastSanitizer }) => {
+export const noddityRenderer = ({ directory, hastSanitizer, domain, pathPrefix, pagePathPrefix, ...options }) => {
+	const urlPrefix = [
+		domain === 'localhost' || domain.startsWith('localhost:')
+			? 'http'
+			: 'https',
+		'://',
+		domain,
+		'/',
+		pathPrefix || '',
+		pagePathPrefix || '',
+	].join('')
+	const pathPrefixIsHashBased = pathPrefix?.includes('#')
+	const urlString = ({ file, id }) => urlPrefix + (pathPrefixIsHashBased
+		? file
+		: (file + '#' + id))
 
 	const addNoddityToHtml = async hastTree => hastUtilNoddity(hastTree, {
 		urlRenderer: async ({ file, id, nodes }) => ([
 			{
 				type: 'element',
 				tagName: 'a',
-				properties: { href: `https://${websiteDomain}/${file}${id ? `#${id}` : ''}` },
+				properties: { href: urlString({ file, id }) },
 				children: nodes,
 			},
 		]),
-		templateRenderer: async ({ file, parameters }) => {
-			const variables = parameters.map(p => {
+		templateRenderer: async ({ file, parameters: templateReferenceParameters }) => {
+			const variables = templateReferenceParameters.map(p => {
 				if (p.key && p.value !== undefined) return { name: p.key, value: p.value }
 				return { positional: true, name: p }
 			})
@@ -64,12 +75,14 @@ export const createCustomRenderer = ({ noddityDirectory, websiteDomain, hastSani
 		},
 	})
 
-	const renderer = noddityRenderer({
-		loadFile: async file => readFile(join(noddityDirectory, file), 'utf8'),
-		metadataParser: string => load(string, { schema: JSON_SCHEMA }),
-		urlRenderer: async ({ link }) => `https://${websiteDomain}/#!/post/${link}`,
-		nonMarkdownRenderer: legacyRactiveNoddityRenderer,
-		markdownToMdast: string => fromMarkdown(string, {
+	const renderer = coreNoddityMicromarkRenderer({
+		loadFile: async file => readFile(join(directory, file), 'utf8'),
+		metadataMdastMutator,
+		urlRenderer: async ({ link }) => urlPrefix + link,
+		nonMarkdownRenderer: legacyRactiveNoddityRenderer({
+			siteProperties: { domain, pathPrefix, pagePathPrefix, ...options },
+		}),
+		markdownToMdast: async string => fromMarkdown(string, {
 			extensions: [
 				frontmatter([ 'yaml' ]),
 				gfm(),

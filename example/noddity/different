@@ -1,0 +1,4 @@
+title: Testing passing in metadata
+markdown: false
+
+<em>{{helloName}}</em>
