@@ -49,7 +49,11 @@ export const noddityRenderer = ({ directory, hastSanitizer, domain, pathPrefix, 
 	const pathPrefixIsHashBased = pathPrefix?.includes('#')
 	const urlString = ({ file, id }) => urlPrefix + (pathPrefixIsHashBased
 		? file
-		: (file + '#' + id))
+		: (
+			id
+				? file + '#' + id
+				: file
+		))
 
 	const addNoddityToHtml = async hastTree => hastUtilNoddity(hastTree, {
 		urlRenderer: async ({ file, id, nodes }) => ([

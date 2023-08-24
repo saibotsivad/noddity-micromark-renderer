@@ -22,6 +22,10 @@ Change categories are:
 ### Removed
 ### Security
 
+## [2.0.1](https://github.com/saibotsivad/noddity-micromark-renderer/compare/v2.0.0...v2.0.1) - 2023-08-23
+### Fixed
+- Accidental hash fragment.
+
 ## [2.0.0](https://github.com/saibotsivad/noddity-micromark-renderer/compare/v1.1.0...v2.0.0) - 2023-08-09
 ### Changed
 - No longer supporting CommonJS exports, it's all *the future* now.

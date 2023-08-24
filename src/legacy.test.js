@@ -24,6 +24,15 @@ test('rendering from a string', async () => {
 	assert.equal(out.html, '<p>a <a href="https://site.com/#!/post/cool.md">file</a> link</p>')
 })
 
+test('rendering from a string without hash based path prefix', async () => {
+	const r = noddityRenderer({
+		...options,
+		pathPrefix: ''
+	})
+	const out = await r.fromString('a [[cool.md|file]] link', 'yolo.md')
+	assert.equal(out.html, '<p>a <a href="https://site.com/post/cool.md">file</a> link</p>')
+})
+
 test('rendering a string with a template', async () => {
 	const out = await render.fromString('a ::home|cool:: template')
 	assert.equal(out.html, '<p>a <a href="https://site.com/">cool</a> template</p>')
